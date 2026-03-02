@@ -21,7 +21,7 @@ class CSRNet(nn.Module):
         vgg = models.vgg16(pretrained=pretrained)
 
         # Extract first 23 layers (up to conv5_3)
-        self.frontend = nn.Sequential(*list(vgg.features.children())[:23])
+        self.frontend = nn.Sequential(*list(vgg.features.children())[:-1])
 
         # --------------------------
         # Backend (Dilated Convs)
