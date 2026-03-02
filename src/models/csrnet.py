@@ -60,8 +60,8 @@ class CSRNet(nn.Module):
         x = self.backend(x)
         x = self.regressor(x)
 
-        # Upsample to input resolution (8x downsampled → restore)
-        x = F.interpolate(x, scale_factor=8, mode='bilinear', align_corners=False)
+        # Upsample to input resolution (16x downsampled → restore)
+        x = F.interpolate(x, scale_factor=16, mode='bilinear', align_corners=False)
 
         return x
 
