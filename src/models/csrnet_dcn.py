@@ -20,14 +20,16 @@ class DeformableBlock(nn.Module):
             in_channels,
             2 * 3 * 3,
             kernel_size=3,
-            padding=1
+            padding=2
+            dilation=2
         )
 
         self.deform_conv = DeformConv2d(
             in_channels,
             out_channels,
             kernel_size=3,
-            padding=1
+            padding=2
+            dilation=2
         )
 
         self.relu = nn.ReLU(inplace=True)
