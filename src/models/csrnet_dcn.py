@@ -20,7 +20,7 @@ class DeformableBlock(nn.Module):
             in_channels,
             2 * 3 * 3,
             kernel_size=3,
-            padding=2
+            padding=2,
             dilation=2
         )
 
@@ -28,7 +28,7 @@ class DeformableBlock(nn.Module):
             in_channels,
             out_channels,
             kernel_size=3,
-            padding=2
+            padding=2,
             dilation=2
         )
 
