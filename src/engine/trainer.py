@@ -39,7 +39,6 @@ def validate(model, dataloader, criterion, device):
     total_loss = 0.0
     total_mae = 0.0
     total_mse = 0.0
-    total_rmse = 0.0
     total_psnr = 0.0
     total_ssim = 0.0
 
@@ -58,13 +57,12 @@ def validate(model, dataloader, criterion, device):
                 pred = pred_density[i]
                 gt = gt_density[i]
 
-                mae, mse, rmse = compute_count_metrics(pred, gt)
+                mae, mse, _ = compute_count_metrics(pred, gt)
                 psnr = compute_psnr(pred, gt)
                 ssim = compute_ssim(pred, gt)
 
                 total_mae += mae
                 total_mse += mse
-                total_rmse += rmse
                 total_psnr += psnr
                 total_ssim += ssim
 
@@ -74,7 +72,7 @@ def validate(model, dataloader, criterion, device):
         "loss": total_loss / len(dataloader),
         "mae": total_mae / num_samples,
         "mse": total_mse / num_samples,
-        "rmse": total_rmse / num_samples,
+        "rmse": (total_mse / num_samples) ** 0.5,
         "psnr": total_psnr / num_samples,
         "ssim": total_ssim / num_samples,
     }
