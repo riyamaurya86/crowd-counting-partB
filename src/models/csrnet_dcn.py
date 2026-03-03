@@ -56,12 +56,20 @@ class CSRNet_DCN(nn.Module):
 
         # Backend (replace dilated conv with deformable blocks)
         self.backend = nn.Sequential(
-            DeformableBlock(512, 512),
-            DeformableBlock(512, 512),
-            DeformableBlock(512, 512),
-            DeformableBlock(512, 256),
-            DeformableBlock(256, 128),
-            DeformableBlock(128, 64),
+        # ---- Stable Dilated Layers ----
+        nn.Conv2d(512, 512, kernel_size=3, padding=2, dilation=2),
+        nn.ReLU(inplace=True),
+
+        nn.Conv2d(512, 512, kernel_size=3, padding=2, dilation=2),
+        nn.ReLU(inplace=True),
+
+        nn.Conv2d(512, 512, kernel_size=3, padding=2, dilation=2),
+        nn.ReLU(inplace=True),
+
+        # ---- Adaptive DCN Layers ----
+        DeformableBlock(512, 256),
+        DeformableBlock(256, 128),
+        DeformableBlock(128, 64),
         )
 
         self.regressor = nn.Conv2d(64, 1, kernel_size=1)
