@@ -24,6 +24,9 @@ def train_one_epoch(model, dataloader, optimizer, criterion, device):
 
         loss = criterion(pred_density, gt_density)
         loss.backward()
+
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+        
         optimizer.step()
 
         total_loss += loss.item()
