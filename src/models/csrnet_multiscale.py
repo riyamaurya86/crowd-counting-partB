@@ -12,9 +12,9 @@ class MultiScaleBlock(nn.Module):
         self.branch2 = nn.Conv2d(in_channels, 256, 3, padding=2, dilation=2)
         self.branch3 = nn.Conv2d(in_channels, 256, 3, padding=4, dilation=4)
 
-        self.relu = nn.ReLU(inplace=True)
+        self.bn = nn.BatchNorm2d(256)   # ✅ ADD THIS
 
-        # Learnable weights
+        self.relu = nn.ReLU(inplace=True)
         self.weights = nn.Parameter(torch.ones(3))
 
     def forward(self, x):
@@ -27,9 +27,10 @@ class MultiScaleBlock(nn.Module):
 
         out = w[0]*b1 + w[1]*b2 + w[2]*b3
 
+        out = self.bn(out)   # ✅ ADD THIS
+
         return out
-
-
+    
 class CSRNet_MultiScale(nn.Module):
     def __init__(self, pretrained=True):
         super(CSRNet_MultiScale, self).__init__()
