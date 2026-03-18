@@ -37,14 +37,24 @@ class CSRNet_MultiScale(nn.Module):
         vgg = models.vgg16(pretrained=pretrained)
         features = list(vgg.features.children())
 
-        # Same frontend as CSRNet
         self.frontend = nn.Sequential(*features[:-2])
 
-        # Replace backend with multi-scale block
+        # Multi-scale block
         self.ms_block = MultiScaleBlock(512)
 
-        # Direct regression (no heavy backend)
-        self.regressor = nn.Conv2d(256, 1, kernel_size=1)
+        # Restore CSRNet backend
+        self.backend = nn.Sequential(
+            nn.Conv2d(256, 256, 3, padding=2, dilation=2),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(256, 128, 3, padding=2, dilation=2),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(128, 64, 3, padding=2, dilation=2),
+            nn.ReLU(inplace=True)
+        )
+
+        self.regressor = nn.Conv2d(64, 1, 1)
 
     def forward(self, x):
 
@@ -52,13 +62,10 @@ class CSRNet_MultiScale(nn.Module):
 
         x = self.ms_block(x)
 
+        x = self.backend(x)
+
         x = self.regressor(x)
 
-        x = F.interpolate(
-            x,
-            scale_factor=16,
-            mode='bilinear',
-            align_corners=False
-        )
+        x = F.interpolate(x, scale_factor=16, mode='bilinear', align_corners=False)
 
         return x
