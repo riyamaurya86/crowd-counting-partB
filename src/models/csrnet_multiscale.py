@@ -8,7 +8,6 @@ class MultiScaleBlock(nn.Module):
     def __init__(self, in_channels):
         super(MultiScaleBlock, self).__init__()
 
-        # Reduced channels (IMPORTANT)
         self.branch1 = nn.Conv2d(in_channels, 128, 3, padding=1, dilation=1)
         self.branch2 = nn.Conv2d(in_channels, 128, 3, padding=2, dilation=2)
         self.branch3 = nn.Conv2d(in_channels, 128, 3, padding=4, dilation=4)
@@ -16,7 +15,12 @@ class MultiScaleBlock(nn.Module):
         self.bn = nn.BatchNorm2d(128)
         self.relu = nn.ReLU(inplace=True)
 
-        self.weights = nn.Parameter(torch.ones(3))
+        self.attention = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Conv2d(128*3, 64, 1),
+            nn.ReLU(),
+            nn.Conv2d(64, 3, 1)
+        )
 
     def forward(self, x):
 
@@ -24,14 +28,20 @@ class MultiScaleBlock(nn.Module):
         b2 = self.relu(self.branch2(x))
         b3 = self.relu(self.branch3(x))
 
-        w = torch.softmax(self.weights, dim=0)
+        concat = torch.cat([b1, b2, b3], dim=1)
 
-        out = w[0]*b1 + w[1]*b2 + w[2]*b3
+        weights = self.attention(concat)      # (B,3,1,1)
+        weights = torch.softmax(weights, dim=1)
 
-        out = self.relu(self.bn(out))   # 🔥 important
+        w1 = weights[:,0:1,:,:]
+        w2 = weights[:,1:2,:,:]
+        w3 = weights[:,2:3,:,:]
+
+        out = w1*b1 + w2*b2 + w3*b3
+
+        out = self.relu(self.bn(out))
 
         return out
-
 
 class CSRNet_MultiScale(nn.Module):
     def __init__(self, pretrained=True):
